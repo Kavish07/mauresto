@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"E:/Personal Documents/AI/Msc AI/Semester 4/Dissertation/multicomm_ensemble/.venv/Scripts/python.exe\" -m multicomm_ensemble.adapters.claude_code_hook"
+          }
+        ]
+      }
+    ]
+  }
+}
