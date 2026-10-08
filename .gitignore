@@ -15,6 +15,12 @@ dist-ssr
 # Local MCP server config (contains secrets)
 .mcp.json
 
+# Backend build output
+backend/target
+
+# Local environment overrides (contains secrets)
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

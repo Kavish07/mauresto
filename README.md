@@ -1,16 +1,18 @@
-# React + Vite
+# mauresto
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A restaurant website with a real "Book a Table" feature.
 
-Currently, two official plugins are available:
+- `frontend/` — React 19 + Vite SPA
+- `backend/` — Spring Boot (Java 21) REST API + PostgreSQL, booking persistence for the table reservation feature
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Running locally
 
-## React Compiler
+The Vite dev server proxies `/api/*` requests to the backend (see `frontend/vite.config.js`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+docker compose up -d                          # start Postgres
+cd backend && ./mvnw spring-boot:run           # start the backend (http://localhost:8080)
+cd frontend && npm install && npm run dev      # start the frontend (http://localhost:5173)
+```
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+See `frontend/README.md` for frontend-specific notes (ESLint, Vite plugins) and `.claude/CLAUDE.md` for the full command reference.
