@@ -1,3 +1,4 @@
+# Deploys frontend/dist to GitHub Pages on every push to master.
 name: Deploy frontend to GitHub Pages
 
 on:
