@@ -21,6 +21,9 @@ backend/target
 # Local environment overrides (contains secrets)
 .env
 
+_bmad-output/
+.claude/CLAUDE.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
