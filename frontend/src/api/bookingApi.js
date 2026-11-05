@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './apiBase'
+
 async function parseResponse(response) {
   const text = await response.text()
   const body = text ? JSON.parse(text) : null
@@ -15,12 +17,12 @@ export async function fetchTables({ date, timeSlot, seats } = {}) {
   if (timeSlot) params.set('timeSlot', timeSlot)
   if (seats) params.set('seats', seats)
 
-  const response = await fetch(`/api/tables?${params.toString()}`)
+  const response = await fetch(`${API_BASE_URL}/api/tables?${params.toString()}`)
   return parseResponse(response)
 }
 
 export async function createBooking(payload) {
-  const response = await fetch('/api/bookings', {
+  const response = await fetch(`${API_BASE_URL}/api/bookings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -29,7 +31,7 @@ export async function createBooking(payload) {
 }
 
 export async function cancelBooking(id) {
-  const response = await fetch(`/api/bookings/${id}`, { method: 'DELETE' })
+  const response = await fetch(`${API_BASE_URL}/api/bookings/${id}`, { method: 'DELETE' })
   if (!response.ok) {
     const text = await response.text()
     const body = text ? JSON.parse(text) : null

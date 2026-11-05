@@ -12,3 +12,7 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+
+app:
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
