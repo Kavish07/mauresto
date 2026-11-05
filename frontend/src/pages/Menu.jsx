@@ -1,93 +1,130 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { createOrder, fetchMenuItems } from '../api/orderApi'
 
-const MENU = {
+const CATEGORY_META = {
   mauritian: {
     label: 'Mauritian', emoji: '🏝️',
     description: 'Authentic island flavours — a unique blend of African, Indian, Chinese & French culinary heritage.',
-    items: [
-      { name: 'Dholl Puri',             price: 25,  desc: 'Thin flatbreads stuffed with ground yellow split peas, served with pickles & chutneys.' },
-      { name: 'Roti Chaud',             price: 20,  desc: 'Soft wholemeal flatbread served with your choice of curry.' },
-      { name: 'Mine Frite',             price: 180, desc: 'Stir-fried egg noodles with vegetables, egg & your choice of protein.' },
-      { name: 'Bol Renversé',           price: 240, desc: 'Fragrant rice with stir-fried vegetables & protein, served inverted in a bowl.' },
-      { name: 'Chicken Briyani',        price: 280, desc: 'Aromatic basmati rice slow-cooked with tender chicken, whole spices & caramelised onion.' },
-      { name: 'Mutton Briyani',         price: 320, desc: 'Slow-cooked mutton in fragrant basmati rice with whole spices & fresh mint.' },
-      { name: 'Octopus Curry',          price: 380, desc: 'Tender octopus simmered in a rich tomato-based Creole curry sauce.' },
-      { name: 'Fish Vindaye',           price: 320, desc: 'Traditional pickled fish with turmeric, mustard seeds, garlic & vinegar.' },
-      { name: 'Rougaille Saucisse',     price: 190, desc: 'Mauritian tomato-based stew with smoked sausages, herbs & spices.' },
-      { name: 'Gateaux Piment (4 pcs)', price: 40,  desc: 'Crispy fried chili cakes made with split peas, fresh chili & herbs.' },
-      { name: 'Alouda',                 price: 60,  desc: 'Chilled Mauritian milkshake with basil seeds, agar jelly & vanilla ice cream.' },
-      { name: 'Mango Achard',           price: 35,  desc: 'Spicy raw mango pickle with mustard, turmeric & fresh chilies.' },
-    ],
   },
   chinese: {
     label: 'Chinese', emoji: '🥢',
     description: 'Traditional Chinese recipes honouring centuries of culinary heritage, wok-tossed to order.',
-    items: [
-      { name: 'Chicken Fried Rice',    price: 195, desc: 'Wok-tossed jasmine rice with chicken, egg, spring onions & soy sauce.' },
-      { name: 'Mixed Fried Rice',      price: 220, desc: 'Wok-tossed rice with chicken, shrimp, vegetables & egg.' },
-      { name: 'Chicken Chow Mein',     price: 210, desc: 'Stir-fried egg noodles with chicken, bok choy & oyster sauce.' },
-      { name: 'Spring Rolls (3 pcs)',  price: 130, desc: 'Crispy rolls filled with seasoned vegetables and glass noodles.' },
-      { name: 'Dim Sum (4 pcs)',       price: 160, desc: 'Steamed dumplings with pork, shrimp and bamboo shoots.' },
-      { name: 'Sweet & Sour Pork',     price: 295, desc: 'Crispy pork pieces with bell peppers & pineapple in tangy sauce.' },
-      { name: 'Honey Lemon Chicken',   price: 280, desc: 'Crispy chicken glazed in a sweet honey lemon reduction.' },
-      { name: 'Wonton Soup',           price: 170, desc: 'Delicate pork wontons in a fragrant ginger-sesame broth.' },
-      { name: 'Fried Wonton (6 pcs)',  price: 150, desc: 'Golden fried wontons stuffed with seasoned pork, served with dipping sauce.' },
-      { name: 'Beef with Black Bean',  price: 310, desc: 'Tender beef strips with black bean sauce, capsicum & onion.' },
-    ],
   },
   indian: {
     label: 'Indian', emoji: '🫕',
     description: 'Rich, aromatic dishes bursting with hand-ground spices and generations of culinary tradition.',
-    items: [
-      { name: 'Butter Chicken',           price: 295, desc: 'Tender tandoori chicken in a velvety tomato-cream sauce with fenugreek.' },
-      { name: 'Chicken Tikka Masala',     price: 310, desc: 'Grilled chicken tikka in a rich, spiced creamy tomato-based sauce.' },
-      { name: 'Palak Paneer',             price: 265, desc: 'Fresh cottage cheese cubes in a spiced spinach gravy.' },
-      { name: 'Dal Makhani',              price: 225, desc: 'Black lentils slow-cooked overnight with butter, cream & whole spices.' },
-      { name: 'Lamb Rogan Josh',          price: 345, desc: 'Succulent Kashmiri lamb in a fragrant sauce of whole spices & aromatics.' },
-      { name: 'Tandoori Chicken (half)',   price: 330, desc: 'Marinated chicken grilled in a clay oven, served with mint chutney & salad.' },
-      { name: 'Garlic Naan',              price: 65,  desc: 'Soft leavened bread brushed with garlic butter, baked in the tandoor.' },
-      { name: 'Samosas (2 pcs)',          price: 85,  desc: 'Crispy pastry filled with spiced potatoes & peas, with tamarind chutney.' },
-      { name: 'Mango Lassi',              price: 80,  desc: 'Chilled yogurt drink blended with fresh Alphonso mango & cardamom.' },
-      { name: 'Gulab Jamun (3 pcs)',      price: 95,  desc: 'Soft milk-solid dumplings soaked in rose-flavoured sugar syrup.' },
-    ],
   },
   italian: {
     label: 'Italian', emoji: '🍝',
     description: 'Classic Italian fare crafted with imported ingredients and time-honoured Old World techniques.',
-    items: [
-      { name: 'Margherita Pizza (10")', price: 360, desc: 'Tomato base, fresh mozzarella & basil leaves on a hand-stretched crust.' },
-      { name: 'Pepperoni Pizza (10")',  price: 420, desc: 'Tomato base, mozzarella & generous pepperoni on a hand-stretched crust.' },
-      { name: 'Pasta Carbonara',        price: 285, desc: 'Spaghetti with guanciale, eggs, pecorino romano & cracked black pepper.' },
-      { name: 'Spaghetti Bolognese',    price: 295, desc: 'Slow-cooked beef ragù with San Marzano tomatoes on al dente spaghetti.' },
-      { name: 'Lasagna al Forno',       price: 325, desc: 'Layered pasta with beef ragù, béchamel & Parmigiano-Reggiano.' },
-      { name: 'Risotto ai Funghi',      price: 310, desc: 'Creamy arborio rice with wild mushrooms, white wine & parmesan.' },
-      { name: 'Caesar Salad',           price: 210, desc: 'Romaine hearts, croutons & parmesan with house Caesar dressing.' },
-      { name: 'Bruschetta',             price: 155, desc: 'Grilled sourdough with heirloom tomatoes, garlic, basil & extra virgin olive oil.' },
-      { name: 'Tiramisu',               price: 190, desc: 'Classic Italian dessert with espresso-soaked ladyfingers & mascarpone cream.' },
-      { name: 'Panna Cotta',            price: 175, desc: 'Silky vanilla cream topped with seasonal berry coulis.' },
-    ],
   },
   continental: {
     label: 'Continental', emoji: '🥩',
     description: 'European classics executed with precision and the finest imported & local ingredients.',
-    items: [
-      { name: 'Grilled Salmon',       price: 490, desc: 'Atlantic salmon fillet with lemon-dill butter, capers & seasonal vegetables.' },
-      { name: 'Beef Tenderloin',       price: 560, desc: '200 g prime beef with truffle jus, roasted potatoes & French beans.' },
-      { name: 'Lamb Rack',             price: 580, desc: 'French-trimmed rack of lamb with herb crust, redcurrant jus & ratatouille.' },
-      { name: 'Chicken Cordon Bleu',   price: 430, desc: 'Stuffed chicken breast with ham & Gruyère, panko-crusted and golden-fried.' },
-      { name: 'French Onion Soup',     price: 185, desc: 'Slow-caramelised onion broth topped with croutons & melted Gruyère.' },
-      { name: 'Quiche Lorraine',       price: 255, desc: 'Buttery pastry filled with eggs, cream, smoked bacon & Gruyère.' },
-      { name: 'Club Sandwich',         price: 225, desc: 'Triple-decker with chicken, bacon, egg, lettuce, tomato & mayo.' },
-      { name: 'Garden Salad',          price: 175, desc: 'Mixed greens, cherry tomatoes, cucumber & radish with balsamic vinaigrette.' },
-      { name: 'Crème Brûlée',          price: 205, desc: 'Classic vanilla custard with a perfectly caramelised sugar crust.' },
-      { name: 'Chocolate Fondant',     price: 220, desc: 'Warm dark chocolate cake with a molten centre, served with vanilla ice cream.' },
-    ],
   },
 }
 
 function Menu() {
-  const [active, setActive] = useState('mauritian')
-  const category = MENU[active]
+  const [menuItems, setMenuItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
+  const [active, setActive] = useState(null)
+
+  const [cart, setCart] = useState([])
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [form, setForm] = useState({ customerName: '', customerPhone: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
+  const [order, setOrder] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      try {
+        const items = await fetchMenuItems()
+        if (cancelled) return
+        setMenuItems(items)
+        setActive(items[0]?.category ?? null)
+      } catch (err) {
+        if (!cancelled) setLoadError(err.message)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const categories = useMemo(() => {
+    const byCategory = {}
+    for (const item of menuItems) {
+      if (!byCategory[item.category]) byCategory[item.category] = []
+      byCategory[item.category].push(item)
+    }
+    return Object.entries(byCategory).map(([key, items]) => ({
+      key,
+      items,
+      ...(CATEGORY_META[key] ?? { label: key, emoji: '🍽️', description: '' }),
+    }))
+  }, [menuItems])
+
+  const activeCategory = categories.find(c => c.key === active)
+
+  function qtyInCart(id) {
+    return cart.find(c => c.menuItemId === id)?.quantity ?? 0
+  }
+
+  function addItem(item) {
+    setCart(prev => {
+      const existing = prev.find(c => c.menuItemId === item.id)
+      if (existing) {
+        return prev.map(c => c.menuItemId === item.id ? { ...c, quantity: c.quantity + 1 } : c)
+      }
+      return [...prev, { menuItemId: item.id, name: item.name, price: Number(item.price), quantity: 1 }]
+    })
+  }
+
+  function changeQty(id, delta) {
+    setCart(prev => prev.flatMap(c => {
+      if (c.menuItemId !== id) return [c]
+      const quantity = c.quantity + delta
+      return quantity <= 0 ? [] : [{ ...c, quantity }]
+    }))
+  }
+
+  function removeItem(id) {
+    setCart(prev => prev.filter(c => c.menuItemId !== id))
+  }
+
+  const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0)
+  const cartTotal = cart.reduce((sum, c) => sum + c.price * c.quantity, 0)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      const response = await createOrder({
+        customerName: form.customerName,
+        customerPhone: form.customerPhone,
+        items: cart.map(c => ({ menuItemId: c.menuItemId, quantity: c.quantity })),
+      })
+      setOrder(response)
+      setCart([])
+    } catch (err) {
+      setSubmitError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function startNewOrder() {
+    setOrder(null)
+    setCheckoutOpen(false)
+    setForm({ customerName: '', customerPhone: '' })
+  }
 
   return (
     <div className="menu-page">
@@ -96,35 +133,129 @@ function Menu() {
         <p className="page-subtitle">All prices in Mauritian Rupees (Rs) · Dine-in &amp; Takeaway</p>
       </div>
 
-      <div className="menu-tabs">
-        {Object.entries(MENU).map(([key, cat]) => (
-          <button
-            key={key}
-            className={`menu-tab${active === key ? ' active' : ''}`}
-            onClick={() => setActive(key)}
-          >
-            <span className="tab-emoji">{cat.emoji}</span>
-            <span>{cat.label}</span>
-          </button>
-        ))}
-      </div>
+      {loading && <p className="book-prompt">Loading menu…</p>}
+      {loadError && <p className="book-error">{loadError}</p>}
 
-      <div className="menu-category-header">
-        <h2>{category.emoji} {category.label} Cuisine</h2>
-        <p>{category.description}</p>
-      </div>
-
-      <div className="menu-grid">
-        {category.items.map(item => (
-          <div key={item.name} className="menu-item">
-            <div className="menu-item-info">
-              <h3>{item.name}</h3>
-              <p>{item.desc}</p>
-            </div>
-            <div className="menu-item-price">Rs {item.price}</div>
+      {!loading && !loadError && activeCategory && (
+        <>
+          <div className="menu-tabs">
+            {categories.map(cat => (
+              <button
+                key={cat.key}
+                className={`menu-tab${active === cat.key ? ' active' : ''}`}
+                onClick={() => setActive(cat.key)}
+              >
+                <span className="tab-emoji">{cat.emoji}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+
+          <div className="menu-category-header">
+            <h2>{activeCategory.emoji} {activeCategory.label} Cuisine</h2>
+            <p>{activeCategory.description}</p>
+          </div>
+
+          <div className="menu-grid">
+            {activeCategory.items.map(item => {
+              const qty = qtyInCart(item.id)
+              return (
+                <div key={item.id} className="menu-item">
+                  <div className="menu-item-info">
+                    <h3>{item.name}</h3>
+                    <p>{item.description}</p>
+                  </div>
+                  <div className="menu-item-action">
+                    <div className="menu-item-price">Rs {Number(item.price)}</div>
+                    {qty === 0 ? (
+                      <button className="btn-sm" onClick={() => addItem(item)}>Add to order</button>
+                    ) : (
+                      <div className="qty-stepper">
+                        <button className="qty-btn" type="button" onClick={() => changeQty(item.id, -1)}>−</button>
+                        <span>{qty}</span>
+                        <button className="qty-btn" type="button" onClick={() => changeQty(item.id, 1)}>+</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {cartCount > 0 && !checkoutOpen && (
+        <div className="order-bar">
+          <div className="order-bar-info"><strong>{cartCount}</strong> item{cartCount === 1 ? '' : 's'} · Rs {cartTotal}</div>
+          <button className="btn-primary" onClick={() => setCheckoutOpen(true)}>Review order</button>
+        </div>
+      )}
+
+      {checkoutOpen && (
+        <div className="booking-form-overlay" onClick={() => !order && setCheckoutOpen(false)}>
+          {order ? (
+            <div className="form-success" onClick={e => e.stopPropagation()}>
+              <div className="success-icon">✓</div>
+              <h2>Order #{order.id} confirmed</h2>
+              <p>
+                {order.items.length} item{order.items.length === 1 ? '' : 's'} for Rs {order.totalAmount} ·
+                Pay on pickup · We'll have it ready as soon as possible, {order.customerName}.
+              </p>
+              <button className="btn-primary" onClick={startNewOrder}>Start a new order</button>
+            </div>
+          ) : (
+            <form className="booking-form" onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
+              <h2>Your order</h2>
+
+              {cart.map(c => (
+                <div key={c.menuItemId} className="order-item-row">
+                  <span className="order-item-name">{c.name} × {c.quantity}</span>
+                  <div className="qty-stepper">
+                    <button className="qty-btn" type="button" onClick={() => changeQty(c.menuItemId, -1)}>−</button>
+                    <span>{c.quantity}</span>
+                    <button className="qty-btn" type="button" onClick={() => changeQty(c.menuItemId, 1)}>+</button>
+                    <button type="button" className="qty-btn" onClick={() => removeItem(c.menuItemId)}>×</button>
+                  </div>
+                </div>
+              ))}
+              <div className="order-total"><span>Total</span><span>Rs {cartTotal}</span></div>
+
+              <div className="form-group">
+                <label htmlFor="orderCustomerName">Full Name</label>
+                <input
+                  id="orderCustomerName"
+                  required
+                  placeholder="Your name"
+                  value={form.customerName}
+                  onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="orderCustomerPhone">Phone</label>
+                <input
+                  id="orderCustomerPhone"
+                  type="tel"
+                  required
+                  placeholder="+230 5 xxx xxxx"
+                  value={form.customerPhone}
+                  onChange={e => setForm(f => ({ ...f, customerPhone: e.target.value }))}
+                />
+              </div>
+
+              {submitError && <p className="book-error">{submitError}</p>}
+
+              <div className="booking-form-actions">
+                <button type="button" className="btn-outline" onClick={() => setCheckoutOpen(false)} disabled={submitting}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={submitting || cart.length === 0}>
+                  {submitting ? 'Placing order…' : 'Place order'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   )
 }

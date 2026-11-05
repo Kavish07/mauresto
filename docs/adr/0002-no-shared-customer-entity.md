@@ -1,0 +1,3 @@
+# No shared Customer entity between Booking and Order
+
+Both `Booking` and the new `Order` identify the guest by `customerName`/`customerPhone`. `Booking` already stores these as plain fields on itself, with no `Customer` table. We decided `Order` follows the same pattern instead of introducing a shared `Customer` entity now that two domains need customer identity. Nothing today needs to look up a guest's booking and order history together, so a shared entity would be speculative; the fields are duplicated per record on purpose. Revisit this if cross-domain customer lookup becomes an actual requirement.
